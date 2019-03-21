@@ -18,8 +18,14 @@ public class PlateCollection {
 
     private PlateCollection(Context appContext){
         mAppContext = appContext;
-        mPlates = new ArrayList<Plate>();
         mSerializer = new RateMyPlateJSONSerializer(mAppContext, FILENAME);
+
+        try {
+            mPlates = mSerializer.loadPlates();
+        } catch (Exception e) {
+            mPlates = new ArrayList<Plate>();
+            Log.e(TAG, "Error loading crimes: ", e);
+        }
     }
 
     public static PlateCollection get(Context c){

@@ -32,23 +32,19 @@ import java.util.Date;
 
 import static android.os.Environment.getExternalStoragePublicDirectory;
 
-public class MainActivity extends AppCompatActivity {
+public class UploadActivity extends AppCompatActivity {
 
-    private static final String TAG = "MainActivity";
-    private static final int REQUEST_CODE = 1;
-    private static Bitmap bitmap = null;
-
-    private ArrayList<String> imageNames = new ArrayList<>();
-    private ArrayList<String> imageCaptions = new ArrayList<>();
-    private ArrayList<Bitmap> images = new ArrayList<>();
+    private static final String TAG = "UploadActivity";
+    private static final int REQUEST_PHOTO = 1;
+    private static final int PICK_IMAGE = 2;
+    private static final String EXTRA_PHOTO_FILENAME = "com.example.ratemyplate.photo_filename";
 
     private Button takePhotoButton;
     private Button choosePhotoButton;
     private Button uploadButton;
     private EditText nameText;
     private EditText captionText;
-    private String pathToFile;
-    private static final int PICK_IMAGE = 100;
+
     Uri imageUri;
     ImageView imageView;
 
@@ -101,19 +97,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void openMyPlates(){
-        String name = getNameText();
-        String caption = getCaptionText();
-        Bitmap image = getImage();
-        imageNames.add(name);
-        imageCaptions.add(caption);
-        images.add(image);
-        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        image.compress(Bitmap.CompressFormat.JPEG, 50, stream);
-        byte[] byteArray = stream.toByteArray();
         Intent intent = new Intent(this, Uploaded_Plates_List.class);
-        intent.putExtra("name", name);
-        intent.putExtra("caption", caption);
-        intent.putExtra("image", byteArray);
         startActivity(intent);
     }
 
@@ -128,7 +112,7 @@ public class MainActivity extends AppCompatActivity {
                 && ContextCompat.checkSelfPermission(this.getApplicationContext(), permissions[2]) == PackageManager.PERMISSION_GRANTED) {
 
         } else {
-            ActivityCompat.requestPermissions(MainActivity.this, permissions, REQUEST_CODE);
+            ActivityCompat.requestPermissions(UploadActivity.this, permissions, REQUEST_PHOTO);
         }
     }
 
@@ -136,7 +120,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data){
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
-            if(requestCode == REQUEST_CODE){
+            if(requestCode == REQUEST_PHOTO){
                 //Create a new Image object and attach it to imageView
                 String filename = data.getStringExtra(MediaStore.ACTION_IMAGE_CAPTURE);
                 if (filename != null) {
@@ -209,22 +193,12 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent takePhoto = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                if (takePhoto.resolveActivity(getPackageManager()) != null) {
-                    File photoFile = null;
-                    photoFile = createPhotoFile();
-
-                    if (photoFile != null){
-                        pathToFile = photoFile.getAbsolutePath();
-                        Uri photoURI = FileProvider.getUriForFile(MainActivity.this, "com.example.ratemyplateuploadplateuploadplate.FileProvider", photoFile);
-                        takePhoto.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
-                        startActivityForResult(takePhoto, 1);
-                    }
-
-                }
+                startActivityForResult(takePhoto, REQUEST_PHOTO);
             }
         };
         takePhotoButton.setOnClickListener(takePhotoListener);
     }
+
 
     private File createPhotoFile() {
         String name = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
